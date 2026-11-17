@@ -1,5 +1,7 @@
 # Organon
 
+[Français](./README.md) · [English](./README.en.md) · [简体中文](./README.zh-CN.md)
+
 Outil du Projet:Biologie de Wikipédia en français qui génère des squelettes d'articles pour les
 taxons à partir de bases de données taxonomiques tierces (GBIF, ITIS, WoRMS, Catalogue of Life,
 EOL, NCBI, …).
