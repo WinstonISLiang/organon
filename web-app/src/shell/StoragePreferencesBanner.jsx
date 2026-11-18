@@ -1,3 +1,5 @@
+import { useT } from "@/i18n/useT.js";
+
 // Icons in the Iconoir "cookie" and "half-cookie" style (full = local
 // storage accepted, half = refused), redrawn as inline SVG (same stroke
 // style as the App.jsx icons) rather than depend on the Iconoir package
@@ -28,13 +30,14 @@ function PartialIcon() {
 }
 
 export function PreferencesToggleButton({ consent, onClick }) {
+  const t = useT();
   return (
     <button
       type="button"
       className="icon-btn"
       onClick={onClick}
-      aria-label="Préférences de stockage local"
-      title="Préférences de stockage local"
+      aria-label={t("storage.preferences")}
+      title={t("storage.preferences")}
     >
       {consent === "accepted" ? <AcceptedIcon /> : <PartialIcon />}
     </button>
@@ -42,19 +45,16 @@ export function PreferencesToggleButton({ consent, onClick }) {
 }
 
 export function PreferencesBanner({ onAccept, onRefuse }) {
+  const t = useT();
   return (
-    <div className="storage-banner" role="dialog" aria-label="Préférences de stockage local">
-      <p>
-        Ce site peut mémoriser vos préférences (thème jour/nuit, et de futures fonctions de
-        recherche) dans le stockage local de votre navigateur, pour 365 jours maximum. Aucune
-        donnée n'est envoyée à un tiers ni à Organon.
-      </p>
+    <div className="storage-banner" role="dialog" aria-label={t("storage.preferences")}>
+      <p>{t("storage.banner")}</p>
       <div className="storage-actions">
         <button type="button" className="run" onClick={onAccept}>
-          Accepter
+          {t("storage.accept")}
         </button>
         <button type="button" className="edit-btn" onClick={onRefuse}>
-          Refuser
+          {t("storage.refuse")}
         </button>
       </div>
     </div>

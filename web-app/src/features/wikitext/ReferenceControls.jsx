@@ -1,15 +1,17 @@
+import { useT } from "@/i18n/useT.js";
 import ControlBox from "./ControlBox.jsx";
 import { referenceItemKey } from "./useReferenceChecklist.js";
 
 export default function ReferenceControls({ references, collapsed, onToggle }) {
+  const t = useT();
   return (
-    <ControlBox title="Références disponibles — décocher celles hors-sujet" collapsed={collapsed} onToggle={onToggle}>
+    <ControlBox title={t("references.title")} collapsed={collapsed} onToggle={onToggle}>
       <div className="reference-checklist">
         <div className="reference-checklist-row reference-checklist-row-locked">
           <span className="reference-checklist-lock" aria-hidden="true">🔒</span>
-          <span className="id-badge">Autres projets</span>
+          <span className="id-badge">{t("references.other_projects")}</span>
           <span className="reference-checklist-note">
-            toujours inclus — fait partie des liens externes, pas des références taxonomiques
+            {t("references.always_included")}
           </span>
         </div>
         {references.items.map((item) => {
@@ -21,10 +23,10 @@ export default function ReferenceControls({ references, collapsed, onToggle }) {
                 type="checkbox"
                 checked={checked}
                 onChange={() => references.toggleItem(key, checked)}
-                aria-label={`Inclure la référence ${item.module_id} dans les liens externes`}
+                aria-label={t("references.include", { module: item.module_id })}
               />
               <span className="id-badge">{item.module_id.toUpperCase()}</span>
-              {!item.default_checked && <span className="id-badge id-badge-conflict">hors domaine</span>}
+              {!item.default_checked && <span className="id-badge id-badge-conflict">{t("references.out_of_domain")}</span>}
               <code>{item.wikitext}</code>
             </label>
           );

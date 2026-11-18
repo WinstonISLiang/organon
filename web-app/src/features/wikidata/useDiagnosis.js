@@ -1,21 +1,25 @@
 import { useRef, useState } from "react";
-import { diagnoseTaxon, exportSuggestions } from "@/api/client.js";
+import { apiErrorMessage, diagnoseTaxon, exportSuggestions } from "@/api/client.js";
+import { useT } from "@/i18n/useT.js";
 import { idOf, suggestionsOf } from "./diagnosisView.js";
 
 const QID_RE = /^Q\d+$/i;
 
-export function diagnosisErrorMessage(err) {
-  if (err.status === 404) return "Taxon ou item Wikidata introuvable.";
-  if (err.status === 422) return "Les données sources ont changé : relancez le diagnostic.";
-  if (err.status === 429) return "Trop de requêtes : réessayez dans une minute.";
-  if (err.status === 502) return "Wikidata est injoignable, réessayez plus tard.";
-  if (err.status === 401) return "Connexion requise pour lancer un diagnostic.";
-  return err.message;
+// `t` is the translator of the calling hook; a server `detail` (other
+// statuses) is displayed as returned.
+export function diagnosisErrorMessage(err, t) {
+  if (err.status === 404) return t("errors.diagnosis_not_found");
+  if (err.status === 422) return t("errors.diagnosis_stale");
+  if (err.status === 429) return t("errors.diagnosis_rate_limited");
+  if (err.status === 502) return t("errors.diagnosis_unreachable");
+  if (err.status === 401) return t("errors.diagnosis_auth_required");
+  return apiErrorMessage(err, t);
 }
 
 // One diagnosis feeds Review and Complete; the proposal selection and
 // the export live here to survive a tab change.
 export function useDiagnosis() {
+  const t = useT();
   // idle | loading | ok | error
   const [status, setStatus] = useState("idle");
   const [result, setResult] = useState(null);
@@ -64,10 +68,10 @@ export function useDiagnosis() {
     } catch (err) {
       if (generation.current !== mine) return;
       if (err.status === 409) {
-        setError(err.message);
+        setError(apiErrorMessage(err, t));
         setCandidates(err.candidates);
       } else {
-        setError(diagnosisErrorMessage(err));
+        setError(diagnosisErrorMessage(err, t));
       }
       setStatus("error");
     }
@@ -126,7 +130,7 @@ export function useDiagnosis() {
     try {
       setExported((await exportSuggestions(payload)).quickstatements);
     } catch (err) {
-      setExportError(diagnosisErrorMessage(err));
+      setExportError(diagnosisErrorMessage(err, t));
     } finally {
       setExporting(false);
     }
@@ -137,7 +141,7 @@ export function useDiagnosis() {
       await navigator.clipboard.writeText(exported);
       setCopied(true);
     } catch {
-      setExportError("Copie impossible : sélectionnez le texte manuellement.");
+      setExportError(t("errors.copy_failed"));
     }
   }
 

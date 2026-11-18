@@ -1,1 +1,0 @@
-var e={language:{label:`Language`},sources:{available_one:`{count} source available`,available_other:`{count} sources available`}};export{e as default};

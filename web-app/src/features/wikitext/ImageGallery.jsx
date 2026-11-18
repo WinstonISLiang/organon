@@ -15,21 +15,25 @@
 // switch, so an effect here would miss searches launched before its
 // first opening. `cache` (indexed by taxon) may thus already hold the
 // entry on arrival.
+import { apiErrorMessage } from "@/api/client.js";
+import { useT } from "@/i18n/useT.js";
+
 export default function ImageGallery({ taxon, selectedFileName, onSelect, onDeselect, cache }) {
+  const t = useT();
   const entry = taxon ? cache[taxon] : null;
 
   if (!taxon) {
-    return <div className="panel-empty">Lancez une génération pour voir les images disponibles.</div>;
+    return <div className="panel-empty">{t("images.start")}</div>;
   }
   if (!entry || entry.status === "loading") {
     return (
       <div className="panel-loading">
-        <p>Recherche d'images sur Commons…</p>
+        <p>{t("images.searching")}</p>
       </div>
     );
   }
   if (entry.status === "error") {
-    return <div className="panel-empty">Impossible d'interroger Commons : {entry.error}</div>;
+    return <div className="panel-empty">{t("images.error", { error: apiErrorMessage(entry.error, t) || t("errors.unknown") })}</div>;
   }
 
   const { suggestions, category_url: categoryUrl, search_url: searchUrl } = entry.data;
@@ -38,13 +42,9 @@ export default function ImageGallery({ taxon, selectedFileName, onSelect, onDese
   if (suggestions.length === 0) {
     return (
       <div className="panel-empty image-gallery-empty">
-        <p>
-          Aucune image remarquable labelisée n'a été trouvée
-          automatiquement pour ce taxon — c'est le cas le plus fréquent, ces distinctions restent rares sur
-          Commons.
-        </p>
+        <p>{t("images.empty")}</p>
         <a className="edit-btn" href={browseUrl} target="_blank" rel="noopener noreferrer">
-          Parcourir {categoryUrl ? "la catégorie Commons" : "Commons"} pour ce taxon
+          {categoryUrl ? t("images.browse_category") : t("images.browse_commons")}
         </a>
       </div>
     );
@@ -52,7 +52,7 @@ export default function ImageGallery({ taxon, selectedFileName, onSelect, onDese
 
   return (
     <div className="image-gallery">
-      <p className="result-sub">Les images Commons suivantes sont labelisées. Incorporez-les dans l'article ou  cliquez sur la vignette pour l'utiliser directement dans la taxobox.</p>
+      <p className="result-sub">{t("images.intro")}</p>
       <div className="image-gallery-grid">
         {suggestions.map((s) => {
           const selected = s.file_name === selectedFileName;
@@ -69,11 +69,11 @@ export default function ImageGallery({ taxon, selectedFileName, onSelect, onDese
                   className="image-card-thumb"
                   onClick={() => onSelect(s.file_name)}
                   aria-pressed={selected}
-                  title={selected ? "Image sélectionnée pour la taxobox" : "Utiliser cette image pour la taxobox"}
+                  title={selected ? t("images.thumb_selected") : t("images.thumb_use")}
                 >
                   <img src={s.thumb_url} alt={s.file_name} loading="lazy" />
                   {s.is_wikidata_image && (
-                    <span className="image-card-badge image-card-badge-wikidata">Déjà utilisée par Wikidata</span>
+                    <span className="image-card-badge image-card-badge-wikidata">{t("images.wikidata_badge")}</span>
                   )}
                 </button>
                 {selected && (
@@ -81,9 +81,9 @@ export default function ImageGallery({ taxon, selectedFileName, onSelect, onDese
                     type="button"
                     className="image-card-badge image-card-badge-selected image-card-deselect"
                     onClick={onDeselect}
-                    title="Retirer cette image de la taxobox"
+                    title={t("images.deselect_title")}
                   >
-                    ✕ Désélectionner
+                    {t("images.deselect")}
                   </button>
                 )}
               </div>
@@ -92,7 +92,7 @@ export default function ImageGallery({ taxon, selectedFileName, onSelect, onDese
                   {s.license_label}
                 </span>
                 <a href={s.page_url} target="_blank" rel="noopener noreferrer" className="image-card-link">
-                  voir sur Commons
+                  {t("images.view_on_commons")}
                 </a>
               </div>
             </div>

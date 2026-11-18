@@ -1,14 +1,16 @@
+import { useT } from "@/i18n/useT.js";
 import ControlBox from "./ControlBox.jsx";
 import { isSpeciesChecked, rankTextFor } from "./subtaxaMerge.js";
 
 export default function SubtaxaControls({ subtaxa, collapsed, onToggle }) {
+  const t = useT();
   const { merge } = subtaxa;
   return (
-    <ControlBox title="Sous-taxons" collapsed={collapsed} onToggle={onToggle}>
+    <ControlBox title={t("subtaxa.title")} collapsed={collapsed} onToggle={onToggle}>
       {subtaxa.enabled && (
         <div className="data-table-wrap subtaxa-merge-groups">
-          {!merge && <p>Calcul de la fusion en cours…</p>}
-          {merge?.groups.length === 0 && <p>Aucun sous-taxon à fusionner.</p>}
+          {!merge && <p>{t("subtaxa.computing")}</p>}
+          {merge?.groups.length === 0 && <p>{t("subtaxa.none")}</p>}
           {merge?.groups.map((group, gi) => {
             const groupCheckedCount = group.species.filter((sp) => isSpeciesChecked(subtaxa.checked, gi, sp)).length;
             const groupAllChecked = groupCheckedCount === group.species.length;
@@ -29,7 +31,7 @@ export default function SubtaxaControls({ subtaxa, collapsed, onToggle }) {
                     className="subtaxa-merge-group-toggle"
                     onClick={() => subtaxa.setGroupChecked(gi, group, !groupAllChecked)}
                   >
-                    {groupAllChecked ? "Tout exclure" : "Tout inclure"}
+                    {groupAllChecked ? t("subtaxa.exclude_all") : t("subtaxa.include_all")}
                   </button>
                 </p>
                 <ul className="subtaxa-merge-species-list">

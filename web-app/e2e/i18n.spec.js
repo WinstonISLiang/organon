@@ -2,19 +2,40 @@ import { expect, test } from '@playwright/test'
 
 const HARNESS = '/e2e/i18n-harness/'
 
-test('the app is in French and does not expose a language selector yet', async ({ page }) => {
-  await page.route('**/api/v1/**', (route) => route.fulfill({ status: 401, json: {} }))
-  await page.goto('/')
-  await expect(page.locator('html')).toHaveAttribute('lang', 'fr')
-  await expect(page.getByRole('combobox', { name: /langue|language/i })).toHaveCount(0)
-})
-
-test('browser language is not enough to enable a locale that is hidden', async ({ browser }) => {
-  const context = await browser.newContext({ locale: 'en-US' })
+test('the app defaults to French and exposes the language selector', async ({ browser }) => {
+  const context = await browser.newContext({ locale: 'fr-FR' })
   const page = await context.newPage()
   await page.route('**/api/v1/**', (route) => route.fulfill({ status: 401, json: {} }))
   await page.goto('/')
   await expect(page.locator('html')).toHaveAttribute('lang', 'fr')
+  await expect(page.getByRole('combobox', { name: 'Langue' })).toHaveValue('fr')
+  await expect(page.getByRole('link', { name: 'Se connecter avec Wikimedia' })).toBeVisible()
+  await context.close()
+})
+
+test('an English browser gets the English interface unless a cookie says otherwise', async ({ browser }) => {
+  const context = await browser.newContext({ locale: 'en-US' })
+  const page = await context.newPage()
+  await page.route('**/api/v1/**', (route) => route.fulfill({ status: 401, json: {} }))
+  await page.goto('/')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+  await expect(page.getByRole('combobox', { name: 'Language' })).toHaveValue('en')
+  await expect(page.getByRole('link', { name: 'Sign in with Wikimedia' })).toBeVisible()
+
+  await context.addCookies([{ name: 'organon-locale', value: 'fr', url: 'http://localhost:5174' }])
+  await page.reload()
+  await expect(page.locator('html')).toHaveAttribute('lang', 'fr')
+  await context.close()
+})
+
+test('switching the language in the app translates the interface', async ({ browser }) => {
+  const context = await browser.newContext({ locale: 'fr-FR' })
+  const page = await context.newPage()
+  await page.route('**/api/v1/**', (route) => route.fulfill({ status: 401, json: {} }))
+  await page.goto('/')
+  await page.getByRole('combobox', { name: 'Langue' }).selectOption('en')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+  await expect(page.getByRole('link', { name: 'Sign in with Wikimedia' })).toBeVisible()
   await context.close()
 })
 

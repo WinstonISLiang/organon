@@ -1,3 +1,4 @@
+import { useT } from "@/i18n/useT.js";
 import DataTab from "./DataTab.jsx";
 import { ModuleStatusIcon } from "./ModuleStatus.jsx";
 import NamesTab from "./NamesTab.jsx";
@@ -7,11 +8,11 @@ import WikitextTab from "@/features/wikitext/WikitextTab.jsx";
 
 // Tabs of the side-navigation shell of the result, in display order.
 const RESULT_VIEWS = [
-  { id: "wikitext", label: "Wikipédia" },
-  { id: "wiktionary", label: "Wiktionnaire" },
-  { id: "wikidata", label: "Wikidata" },
-  { id: "wikispecies", label: "Wikispecies" },
-  { id: "data", label: "Données" },
+  { id: "wikitext", labelKey: "result.tab_wikipedia" },
+  { id: "wiktionary", labelKey: "result.tab_wiktionary" },
+  { id: "wikidata", labelKey: "result.tab_wikidata" },
+  { id: "wikispecies", labelKey: "result.tab_wikispecies" },
+  { id: "data", labelKey: "result.tab_data" },
 ];
 
 // Projects with no generation module yet: the tab exists, its content
@@ -22,15 +23,15 @@ const UNSUPPORTED_PROJECT_VIEWS = ["wiktionary", "wikispecies"];
 // sub-tabs in the same horizontal bar.
 const WIKIPEDIA_GROUP_VIEWS = ["wikitext", "names", "other"];
 const WIKITEXT_SUBTABS = [
-  { id: "all", label: "Tout" },
-  { id: "taxobox", label: "Taxobox" },
-  { id: "image", label: "Image" },
-  { id: "subranks", label: "Sous-rangs" },
-  { id: "references", label: "Liens externes" },
+  { id: "all", labelKey: "result.subtab_all" },
+  { id: "taxobox", labelKey: "result.subtab_taxobox" },
+  { id: "image", labelKey: "result.subtab_image" },
+  { id: "subranks", labelKey: "result.subtab_subranks" },
+  { id: "references", labelKey: "result.subtab_references" },
 ];
 const EXTRA_SUBTABS = [
-  { id: "names", label: "Noms & synonymes" },
-  { id: "other", label: "Autres" },
+  { id: "names", labelKey: "result.subtab_names" },
+  { id: "other", labelKey: "result.subtab_other" },
 ];
 
 export default function ResultPanel({
@@ -52,12 +53,13 @@ export default function ResultPanel({
   diagnosis,
   query,
 }) {
+  const t = useT();
   const { activeSource, activeEntry, activeData } = tracking;
   const inWikipediaGroup = WIKIPEDIA_GROUP_VIEWS.includes(view);
   return (
     <div className="result-shell">
-      <nav className="result-nav" role="tablist" aria-label="Vue du résultat">
-        {RESULT_VIEWS.map(({ id, label }) => {
+      <nav className="result-nav" role="tablist" aria-label={t("result.nav_label")}>
+        {RESULT_VIEWS.map(({ id, labelKey }) => {
           const on = id === "wikitext" ? inWikipediaGroup : view === id;
           return (
             <button
@@ -69,7 +71,7 @@ export default function ResultPanel({
               className={"tab" + (on ? " on" : "")}
               onClick={() => onChangeView(id)}
             >
-              {label}
+              {t(labelKey)}
               {(id === "wikitext" || id === "data") && !tracking.submitError && tracking.hasPending && <ModuleStatusIcon status="running" />}
             </button>
           );
@@ -78,8 +80,8 @@ export default function ResultPanel({
 
       <div className="result-panel-wrap" role="tabpanel" aria-labelledby={`nav-tab-${view}`}>
         {activeData && inWikipediaGroup && (
-          <div className="tabs subtabs" role="tablist" aria-label="Section du résultat à afficher">
-            {WIKITEXT_SUBTABS.map(({ id, label }) => {
+          <div className="tabs subtabs" role="tablist" aria-label={t("result.subnav_label")}>
+            {WIKITEXT_SUBTABS.map(({ id, labelKey }) => {
               const on = view === "wikitext" && wikitextSubTab === id;
               return (
                 <button
@@ -93,11 +95,11 @@ export default function ResultPanel({
                     onChangeWikitextSubTab(id);
                   }}
                 >
-                  {label}
+                  {t(labelKey)}
                 </button>
               );
             })}
-            {EXTRA_SUBTABS.map(({ id, label }) => (
+            {EXTRA_SUBTABS.map(({ id, labelKey }) => (
               <button
                 key={id}
                 type="button"
@@ -106,7 +108,7 @@ export default function ResultPanel({
                 className={"tab" + (view === id ? " on" : "")}
                 onClick={() => onChangeView(id)}
               >
-                {label}
+                {t(labelKey)}
               </button>
             ))}
           </div>
@@ -140,7 +142,7 @@ export default function ResultPanel({
 
         {UNSUPPORTED_PROJECT_VIEWS.includes(view) && (
           <div className="panel">
-            <p className="panel-empty">Non pris en charge pour l'instant.</p>
+            <p className="panel-empty">{t("result.unsupported")}</p>
           </div>
         )}
 

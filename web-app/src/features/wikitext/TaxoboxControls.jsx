@@ -1,3 +1,4 @@
+import { useT } from "@/i18n/useT.js";
 import ControlBox from "./ControlBox.jsx";
 import { mergeAdjacentEqual } from "@/shared/rankComparison.js";
 
@@ -14,12 +15,13 @@ const RANK_ABBR = {
 };
 
 export default function TaxoboxControls({ facets, collapsed, onToggle, onChooseSource }) {
+  const t = useT();
   const { availableSources, classificationTable, taxoboxSourceId, recommendedTaxoboxSource, taxoboxNameByRank } = facets;
   return (
     <ControlBox
       title={
         <>
-          Choisir la classification <br/><small>« Cocher » ajoute {"{{Taxobox conflit}}"} pour les rangs en désaccord</small>
+          {t("taxobox.title")} <br/><small>{t("taxobox.hint", { template: "{{Taxobox conflit}}" })}</small>
         </>
       }
       collapsed={collapsed}
@@ -36,7 +38,7 @@ export default function TaxoboxControls({ facets, collapsed, onToggle, onChooseS
                     type="button"
                     className={"id-badge id-badge-btn" + (taxoboxSourceId === m.id ? " on" : "")}
                     onClick={() => onChooseSource(m.id)}
-                    title={m.id === recommendedTaxoboxSource ? "Recommandé" : "Choisir cette source pour la Taxobox"}
+                    title={m.id === recommendedTaxoboxSource ? t("taxobox.recommended") : t("taxobox.choose_source")}
                   >
                     {m.id.toUpperCase()}
                     {m.id === recommendedTaxoboxSource ? " ★" : ""}
@@ -78,8 +80,8 @@ export default function TaxoboxControls({ facets, collapsed, onToggle, onChooseS
                         type="checkbox"
                         checked={!!facets.managedRankConflicts[rank]}
                         onChange={() => facets.toggleRankConflictManaged(rank)}
-                        aria-label={`Gérer le désaccord sur le rang ${rank} dans le rendu`}
-                        title="Gérer ce désaccord dans le rendu"
+                        aria-label={t("taxobox.manage_conflict", { rank })}
+                        title={t("taxobox.manage_conflict_title")}
                       />
                     )}
                   </td>

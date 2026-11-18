@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useT } from "@/i18n/useT.js";
 import { fetchAuthStatus, fetchDomains, fetchModules, fetchSources, logout } from "@/api/client.js";
 import AuthorsPage from "@/features/authors/AuthorsPage.jsx";
 import ConnectGate from "@/shell/ConnectGate.jsx";
@@ -36,6 +37,7 @@ function getInitialTheme() {
 }
 
 export default function App() {
+  const t = useT();
   const [theme, setTheme] = useState(getInitialTheme);
   const [domains, setDomains] = useState([]);
   const [modules, setModules] = useState([]);
@@ -74,6 +76,10 @@ export default function App() {
   // sub-rank merge toggle) collapsed by the user once the choice is
   // made, to keep only the header.
   const [collapsedBoxes, setCollapsedBoxes] = useState({});
+
+  useEffect(() => {
+    document.title = t("app.title");
+  }, [t]);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -259,7 +265,7 @@ export default function App() {
           <>
             <span className="eyebrow">Organon</span>
             <h1>
-              Interrogez AlgaeBase, ITIS… — <em>en une requête</em>
+              {t("connect.title_before")} <em>{t("connect.title_emphasis")}</em>
             </h1>
             <ConnectGate />
           </>

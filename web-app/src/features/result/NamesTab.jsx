@@ -1,7 +1,9 @@
+import { useT } from "@/i18n/useT.js";
 import { groupSourcesByValue, mergeAdjacentEqual } from "@/shared/rankComparison.js";
 import { normalizeAuthor } from "@/shared/useAuthorChoice.js";
 
 function AuthorCard({ activeData, availableSources, author }) {
+  const t = useT();
   const valueFor = (m) => {
     const candidate = activeData.author_candidates[m.id];
     return candidate ? normalizeAuthor(candidate) : "—";
@@ -23,7 +25,7 @@ function AuthorCard({ activeData, availableSources, author }) {
                   type="button"
                   className={"id-badge id-badge-btn" + (chosenSourceId === m.id ? " on" : "")}
                   onClick={() => author.chooseSource(m.id)}
-                  title={m.id === recommendedSource ? "Recommandé (vote majoritaire)" : "Choisir cette source pour l'auteur"}
+                  title={m.id === recommendedSource ? t("names.author_recommended") : t("names.author_choose")}
                 >
                   {m.id.toUpperCase()}
                   {m.id === recommendedSource ? " ★" : ""}
@@ -50,42 +52,43 @@ function AuthorCard({ activeData, availableSources, author }) {
 }
 
 export default function NamesTab({ activeData, availableSources, author }) {
+  const t = useT();
   return (
     <div className="panel">
       <div className="panel-head">
-        <span className="t">Noms &amp; synonymes</span>
+        <span className="t">{t("names.title")}</span>
       </div>
       {!activeData ? (
-        <p className="panel-empty">Aucune donnée disponible pour le moment.</p>
+        <p className="panel-empty">{t("names.empty")}</p>
       ) : (
         <>
           <div className="noms-card">
             <div className="noms-card-head">
-              <span className="noms-card-title">Auteur</span>
-              <small className="noms-card-hint">plusieurs choix parfois possibles</small>
+              <span className="noms-card-title">{t("names.author")}</span>
+              <small className="noms-card-hint">{t("names.author_hint")}</small>
             </div>
             {activeData.consolidated_author ? (
               <AuthorCard activeData={activeData} availableSources={availableSources} author={author} />
             ) : (
-              <p className="panel-empty">Aucun auteur rapporté pour ce taxon.</p>
+              <p className="panel-empty">{t("names.author_none")}</p>
             )}
           </div>
 
           <div className="noms-card">
             <div className="noms-card-head">
-              <span className="noms-card-title">Noms vernaculaires</span>
+              <span className="noms-card-title">{t("names.vernacular")}</span>
             </div>
             {activeData.vernacular_names.length > 0 ? (
               <p className="noms-card-body">{activeData.vernacular_names.join(", ")}</p>
             ) : (
-              <p className="panel-empty">Aucun nom vernaculaire rapporté.</p>
+              <p className="panel-empty">{t("names.vernacular_none")}</p>
             )}
           </div>
 
           {Object.values(activeData.vernacular_names_without_language || {}).some((names) => names.length > 0) && (
             <div className="noms-card">
               <div className="noms-card-head">
-                <span className="noms-card-title">Noms sans code langue</span>
+                <span className="noms-card-title">{t("names.vernacular_no_language")}</span>
               </div>
               {Object.entries(activeData.vernacular_names_without_language).map(([module, names]) => (
                 <div key={module} className="autres-noms-groupe">
@@ -99,7 +102,7 @@ export default function NamesTab({ activeData, availableSources, author }) {
           {Object.entries(activeData.other_names || {}).some(([, names]) => names.length > 0) && (
             <div className="noms-card">
               <div className="noms-card-head">
-                <span className="noms-card-title">Autres noms</span>
+                <span className="noms-card-title">{t("names.other_names")}</span>
               </div>
               {Object.entries(activeData.other_names).map(([status, names]) => (
                 names.length > 0 && (
@@ -115,8 +118,9 @@ export default function NamesTab({ activeData, availableSources, author }) {
           <div className="noms-card">
             <div className="noms-card-head">
               <span className="noms-card-title">
-                Synonymes
-                {activeData.synonyms_source ? ` — source : ${activeData.synonyms_source.toUpperCase()}` : ""}
+                {activeData.synonyms_source
+                  ? t("names.synonyms_with_source", { source: activeData.synonyms_source.toUpperCase() })
+                  : t("names.synonyms")}
               </span>
             </div>
             {activeData.synonyms.length > 0 ? (
@@ -124,9 +128,9 @@ export default function NamesTab({ activeData, availableSources, author }) {
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th>Nom</th>
-                      <th>Auteur</th>
-                      <th>Rang</th>
+                      <th>{t("names.col_name")}</th>
+                      <th>{t("names.col_author")}</th>
+                      <th>{t("names.col_rank")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -141,13 +145,13 @@ export default function NamesTab({ activeData, availableSources, author }) {
                 </table>
               </div>
             ) : (
-              <p className="panel-empty">Aucun synonyme rapporté.</p>
+              <p className="panel-empty">{t("names.synonyms_none")}</p>
             )}
           </div>
 
           <div className="noms-card">
             <div className="noms-card-head">
-              <span className="noms-card-title">Basionyme</span>
+              <span className="noms-card-title">{t("names.basionym")}</span>
             </div>
             {activeData.basionym ? (
               <p className="noms-card-body">
@@ -156,7 +160,7 @@ export default function NamesTab({ activeData, availableSources, author }) {
                 <span className="id-badge">{activeData.basionym.source.toUpperCase()}</span>
               </p>
             ) : (
-              <p className="panel-empty">Aucun basionyme rapporté.</p>
+              <p className="panel-empty">{t("names.basionym_none")}</p>
             )}
           </div>
         </>

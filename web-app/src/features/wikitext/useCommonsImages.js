@@ -5,6 +5,8 @@ import { fetchCommonsImages } from "@/api/client.js";
 // remounted on each sub-tab switch: keeping the cache here avoids a
 // request on each return to "Image". Loading starts as soon as the
 // taxon is known, without waiting for the sub-tab to open.
+// A failed entry keeps the Error itself: ImageGallery translates it
+// (apiErrorMessage) in the current language.
 //
 // No "loading" entry: ImageGallery treats a missing entry as loading.
 export function useCommonsImages(taxon) {
@@ -20,7 +22,7 @@ export function useCommonsImages(taxon) {
       })
       .catch((err) => {
         if (cancelled) return;
-        setCache((prev) => ({ ...prev, [taxon]: { status: "error", error: err.message || "Erreur inconnue." } }));
+        setCache((prev) => ({ ...prev, [taxon]: { status: "error", error: err } }));
       });
     return () => {
       cancelled = true;

@@ -57,6 +57,8 @@ async function measure(page, first) {
 
 // The storage banner is fixed at the bottom and would cover the footer links.
 async function goHome(page) {
+  // The assertions use French labels: pin the locale whatever the browser language.
+  await page.context().addCookies([{ name: 'organon-locale', value: 'fr', url: 'http://localhost:5174' }])
   await page.goto('/')
   // Consent is remembered after the first refusal: the banner only shows once.
   const refuse = page.getByRole('button', { name: 'Refuser' })

@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useId, useMemo, useRef, useState } from "react";
 import { searchTaxa } from "@/api/client.js";
+import { useLocale, useT } from "@/i18n/useT.js";
 import { buildDisambiguationTree, flattenDisambiguationTree } from "./disambiguationTree.js";
 import { resolveMatches } from "./searchResolution.js";
 import { TaxonName } from "./taxonMatches.jsx";
@@ -8,9 +9,10 @@ const EXAMPLES = ["Gadus morhua", "Panthera leo", "Quercus robur", "Amanita musc
 const AUTOCOMPLETE_DELAY_MS = 300;
 
 function MatchLabel({ match }) {
+  const t = useT();
   return (
     <>
-      {match.extinct && <span aria-label="éteint" title="Éteint">†</span>}
+      {match.extinct && <span aria-label={t("search.extinct_label")} title={t("search.extinct_title")}>†</span>}
       <TaxonName match={match} />
       {match.author && <span className="disambiguation-author">{match.author}</span>}
       {match.kingdom && <span className="id-badge">{match.kingdom}</span>}
@@ -25,7 +27,7 @@ function MatchLabel({ match }) {
 // Group the domains by parent (e.g. the children of "animal") from the
 // `parent` field of /api/v1/domains, rather than recode the
 // organon/core/domains.py tree in the frontend.
-function groupDomains(domains) {
+function groupDomains(domains, locale) {
   const children = new Map();
   const top = [];
   for (const d of domains) {
@@ -37,8 +39,8 @@ function groupDomains(domains) {
       top.push(d.id);
     }
   }
-  top.sort((a, b) => a.localeCompare(b, "fr"));
-  for (const list of children.values()) list.sort((a, b) => a.localeCompare(b, "fr"));
+  top.sort((a, b) => a.localeCompare(b, locale));
+  for (const list of children.values()) list.sort((a, b) => a.localeCompare(b, locale));
   return { top, children };
 }
 
@@ -49,6 +51,8 @@ export default function TaxonSearch({
   compact, domains, busy, error, kept, onLaunch, onOpenKept,
   referenceSource, referenceLabel, onReferenceSourceChange, classificationModules,
 }) {
+  const t = useT();
+  const { locale } = useLocale();
   const [text, setText] = useState("");
   const [domain, setDomain] = useState("*");
   const [optionsOpen, setOptionsOpen] = useState(false);
@@ -64,7 +68,7 @@ export default function TaxonSearch({
   const lastSearch = useRef({ query: null, matches: [] });
   const listId = useId();
   const optionsId = useId();
-  const domainGroups = useMemo(() => groupDomains(domains), [domains]);
+  const domainGroups = useMemo(() => groupDomains(domains, locale), [domains, locale]);
 
   useEffect(() => () => clearTimeout(timer.current), []);
 
@@ -168,8 +172,8 @@ export default function TaxonSearch({
       onChange={(e) => handleChange(e.target.value)}
       onKeyDown={handleKeyDown}
       onBlur={() => setTimeout(() => setSuggestionsOpen(false), 150)}
-      placeholder="nom scientifique, nom vernaculaire ou QID…"
-      aria-label="Nom scientifique, nom vernaculaire ou QID Wikidata"
+      placeholder={t("search.placeholder")}
+      aria-label={t("search.input_label")}
       autoComplete="off"
       spellCheck="false"
       role="combobox"
@@ -187,7 +191,7 @@ export default function TaxonSearch({
         aria-controls={`${optionsId}-help`}
         onClick={() => setHelpOpen((v) => !v)}
       >
-        <span aria-hidden="true">ⓘ</span> Aide
+        <span aria-hidden="true">ⓘ</span> {t("search.help")}
       </button>
       <button
         type="button"
@@ -196,16 +200,13 @@ export default function TaxonSearch({
         aria-controls={optionsId}
         onClick={() => setOptionsOpen((open) => !open)}
       >
-        Options {optionsOpen ? "▴" : "▾"}
+        {t("search.options")} {optionsOpen ? "▴" : "▾"}
       </button>
     </span>
   );
   const helpBubble = helpOpen && (
     <p className="search-info-bubble" id={`${optionsId}-help`} role="note">
-      Saisissez un nom scientifique, un nom vernaculaire ou un QID Wikidata. Les suggestions
-      s'affichent pendant la saisie ; une liste de candidats n'est proposée que si le nom est
-      ambigu (homonymes, nom vernaculaire à plusieurs résultats). Le filtre restreint les
-      suggestions et lève les homonymies entre domaines.
+      {t("search.help_text")}
     </p>
   );
   const dropdown = suggestionsOpen && visibleSuggestions.length > 0 && (
@@ -231,9 +232,9 @@ export default function TaxonSearch({
   const options = optionsOpen && (
     <div className="search-options" id={optionsId}>
       <div className="field-box">
-        <label className="field-label" htmlFor={`${optionsId}-domain`}>Filtre de domaine</label>
+        <label className="field-label" htmlFor={`${optionsId}-domain`}>{t("search.domain_filter")}</label>
         <select id={`${optionsId}-domain`} value={domain} onChange={(e) => setDomain(e.target.value)}>
-          <option value="*">aucun</option>
+          <option value="*">{t("search.domain_none")}</option>
           {domainGroups.top.map((id) => (
             <Fragment key={id}>
               <option value={id}>{id}</option>
@@ -245,13 +246,13 @@ export default function TaxonSearch({
         </select>
       </div>
       <div className="field-box">
-        <label className="field-label" htmlFor={`${optionsId}-source`}>Source de référence</label>
+        <label className="field-label" htmlFor={`${optionsId}-source`}>{t("search.reference_source")}</label>
         <select
           id={`${optionsId}-source`}
           value={referenceSource}
           onChange={(e) => onReferenceSourceChange(e.target.value)}
         >
-          <option value="">Auto{referenceLabel ? ` · ${referenceLabel.toUpperCase()}` : ""}</option>
+          <option value="">{t("search.reference_auto")}{referenceLabel ? ` · ${referenceLabel.toUpperCase()}` : ""}</option>
           {classificationModules.map((m) => (
             <option key={m.id} value={m.id}>{m.id.toUpperCase()}</option>
           ))}
@@ -262,7 +263,7 @@ export default function TaxonSearch({
   const candidateList = candidates && (
     <div className="disambiguation">
       <p className="disambiguation-title">
-        Plusieurs taxons correspondent à « {candidates.query} » — choisissez celui à ouvrir :
+        {t("search.candidates_title", { query: candidates.query })}
       </p>
       <ul>
         {flattenDisambiguationTree(buildDisambiguationTree(candidates.matches)).map(
@@ -277,13 +278,13 @@ export default function TaxonSearch({
         )}
       </ul>
       <div className="disambiguation-footer">
-        <button type="button" className="edit-btn" onClick={() => setCandidates(null)}>Fermer</button>
+        <button type="button" className="edit-btn" onClick={() => setCandidates(null)}>{t("common.close")}</button>
       </div>
     </div>
   );
   const keptRow = kept.length > 0 && (
     <div className="kept-row">
-      <span className="kept-label">Résultats conservés</span>
+      <span className="kept-label">{t("search.kept_label")}</span>
       {kept.map((name) => (
         <button key={name} type="button" className="kept-chip" onClick={() => onOpenKept(name)}>{name}</button>
       ))}
@@ -293,7 +294,7 @@ export default function TaxonSearch({
   const title = (
     <>
       <span className="eyebrow">Organon</span>
-      <h1 className="home-title">Un <span>taxon</span> en entrée, <em>toutes</em> les bases disponibles en réponse</h1>
+      <h1 className="home-title">{t("search.title_before")} <span>{t("search.title_taxon")}</span> {t("search.title_middle")} <em>{t("search.title_emphasis")}</em> {t("search.title_after")}</h1>
     </>
   );
 
@@ -301,7 +302,7 @@ export default function TaxonSearch({
     return (
       <>
         {title}
-        <section aria-label="Recherche" className="search-compact">
+        <section aria-label={t("search.section_label")} className="search-compact">
           <form className="search-compact-row" onSubmit={(e) => { e.preventDefault(); submit(text); }}>
             <div className="prompt search-compact-field">
               <span className="prompt-glyph" aria-hidden="true">›</span>
@@ -310,7 +311,7 @@ export default function TaxonSearch({
               {dropdown}
             </div>
             <button className="run search-compact-run" type="submit" disabled={working}>
-              {working ? "Recherche…" : "Rechercher"}
+              {working ? t("search.searching") : t("search.submit")}
             </button>
           </form>
           {helpBubble}
@@ -331,14 +332,14 @@ export default function TaxonSearch({
           <span className="prompt-glyph" aria-hidden="true">›</span>
           {input}
           <button className="run home-run" type="submit" disabled={working}>
-            {working ? "Recherche…" : "Rechercher ▸"}
+            {working ? t("search.searching") : t("search.submit_home")}
           </button>
           {dropdown}
         </div>
         <div className="divider" />
         <div className="home-foot">
           <p className="example-row">
-            exemples :{" "}
+            {t("search.examples")}{" "}
             {EXAMPLES.map((name, i) => (
               <Fragment key={name}>
                 {i > 0 && " · "}

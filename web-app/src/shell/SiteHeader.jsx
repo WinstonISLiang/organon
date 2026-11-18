@@ -1,5 +1,10 @@
 import { LOGIN_URL } from "@/api/client.js";
+import LanguageSelector from "@/i18n/LanguageSelector.jsx";
+import { useT } from "@/i18n/useT.js";
 import { PreferencesToggleButton } from "./StoragePreferencesBanner.jsx";
+
+// Username returned by /auth/me when ORGANON_DEV=1 (organon/api/deps.py).
+const DEV_USERNAME = "Utilisateur de développement";
 
 function SunIcon() {
   return (
@@ -28,39 +33,42 @@ export default function SiteHeader({
   storageConsent,
   onShowPreferences,
 }) {
+  const t = useT();
   return (
     <header>
       <div className="wrap topbar">
         <div className="brand">
           {username ? (
             <span className="auth-status">
-              {username} ·{" "}
+              {username === DEV_USERNAME ? t("header.dev_username") : username} ·{" "}
               <button type="button" className="footer-link" onClick={onLogout}>
-                Se déconnecter
+                {t("header.sign_out")}
               </button>
             </span>
           ) : (
             <a className="footer-link" href={LOGIN_URL}>
-              Se connecter
+              {t("header.sign_in")}
             </a>
           )}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <button type="button" className="status" onClick={onShowSources}>
             <span className="live">
-              {availableSourceCount ?? "—"} source{availableSourceCount > 1 ? "s" : ""} disponible
-              {availableSourceCount > 1 ? "s" : ""}
+              {typeof availableSourceCount === "number"
+                ? t("sources.available", { count: availableSourceCount })
+                : t("header.sources_unknown")}
             </span>
           </button>
           <button
             type="button"
             className="icon-btn"
             onClick={onToggleTheme}
-            aria-label="Basculer jour / nuit"
-            title="Jour / nuit"
+            aria-label={t("header.theme_toggle")}
+            title={t("header.theme_toggle_title")}
           >
             {theme === "dark" ? <SunIcon /> : <MoonIcon />}
           </button>
+          <LanguageSelector />
           <PreferencesToggleButton consent={storageConsent} onClick={onShowPreferences} />
         </div>
       </div>

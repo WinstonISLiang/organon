@@ -1,8 +1,7 @@
 import { LOCALE_NAMES } from "./locales.js";
 import { useLocale, useT } from "./useT.js";
 
-// Not mounted yet: SiteHeader gets it in the final migration step,
-// together with "en" in ENABLED_LOCALES.
+// Mounted in SiteHeader; renders nothing while a single locale is enabled.
 export default function LanguageSelector() {
   const t = useT();
   const { locale, enabledLocales, setLocale } = useLocale();

@@ -1,3 +1,5 @@
+import { translateServerMessage } from "@/api/serverErrors.js";
+import { useLocale, useT } from "@/i18n/useT.js";
 import { ModuleStatusDot } from "./ModuleStatus.jsx";
 
 // Extract the target of the first link of an external link HTML block
@@ -10,17 +12,19 @@ function extractHref(html) {
   return match ? match[1] : null;
 }
 
-// "0,6 s" rather than "0.6s": the French decimal convention used
-// elsewhere in the app.
-function formatDuration(seconds) {
-  return `${seconds.toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} s`;
+// "0,6 s" in French, "0.6 s" in English: the decimal convention of
+// the current locale.
+function formatDuration(seconds, locale) {
+  return `${seconds.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} s`;
 }
 
 export default function DataTab({ activeSource, activeEntry, activeData, onRetryModule }) {
+  const t = useT();
+  const { locale } = useLocale();
   return (
     <div className="panel">
       <div className="panel-head">
-        <span className="t">Données — {activeSource ? activeSource.toUpperCase() : "…"}</span>
+        <span className="t">{t("data.title", { source: activeSource ? activeSource.toUpperCase() : "…" })}</span>
       </div>
       <div>
         {activeData?.warnings.length > 0 && (
@@ -36,9 +40,9 @@ export default function DataTab({ activeSource, activeEntry, activeData, onRetry
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Source</th>
-                  <th>Informations</th>
-                  <th>Temps d'exécution</th>
+                  <th>{t("data.col_source")}</th>
+                  <th>{t("data.col_info")}</th>
+                  <th>{t("data.col_duration")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -67,9 +71,15 @@ export default function DataTab({ activeSource, activeEntry, activeData, onRetry
                       <td>
                         {info.status === "error" ? (
                           <span className="data-table-cell-flex">
-                            <span>{info.message ? `Erreur : ${info.message}` : "Erreur réseau"}</span>
+                            <span>
+                              {info.message
+                                ? t("data.error_with_message", {
+                                    message: translateServerMessage(info.message, t) || info.message,
+                                  })
+                                : t("data.network_error")}
+                            </span>
                             <button type="button" className="footer-link" onClick={() => onRetryModule(moduleId)}>
-                              Réessayer
+                              {t("common.retry")}
                             </button>
                           </span>
                         ) : (
@@ -77,7 +87,7 @@ export default function DataTab({ activeSource, activeEntry, activeData, onRetry
                         )}
                       </td>
                       <td className="data-table-duration">
-                        {info.durationSeconds != null ? formatDuration(info.durationSeconds) : "—"}
+                        {info.durationSeconds != null ? formatDuration(info.durationSeconds, locale) : "—"}
                       </td>
                     </tr>
                   );
@@ -86,7 +96,7 @@ export default function DataTab({ activeSource, activeEntry, activeData, onRetry
             </table>
           </div>
         ) : (
-          <p className="panel-empty">Aucun suivi disponible pour le moment.</p>
+          <p className="panel-empty">{t("data.no_tracking")}</p>
         )}
       </div>
     </div>

@@ -1,5 +1,7 @@
+import { useT } from "@/i18n/useT.js";
+
 export default function ResultIdentity({ query, activeData, author, onGoToNames, onGoToOtherInfo }) {
-  const pluralSuffix = (n) => ({ source: n === 1 ? "une source" : "des sources", verb: n === 1 ? "" : "nt" });
+  const t = useT();
   const kingdomAlert = activeData?.kingdom_inconsistencies;
   const rankAlert = activeData?.rank_inconsistencies;
   return (
@@ -7,7 +9,7 @@ export default function ResultIdentity({ query, activeData, author, onGoToNames,
       <div className="result-head">
         {activeData?.extinct && (
           <button type="button" className="id-badge id-badge-eteint id-badge-clickable" onClick={onGoToOtherInfo}>
-            ✝ éteint
+            {t("identity.extinct_badge")}
           </button>
         )}
         <h2>
@@ -21,9 +23,9 @@ export default function ResultIdentity({ query, activeData, author, onGoToNames,
               (author.values.length === 0 ? " id-author-missing" : author.variants.size > 1 ? " id-author-conflict" : " id-author-ok")
             }
             onClick={onGoToNames}
-            title={author.variants.size > 1 ? `Auteurs en désaccord entre sources : ${[...author.variants].join(" / ")}` : undefined}
+            title={author.variants.size > 1 ? t("identity.author_conflict_title", { authors: [...author.variants].join(" / ") }) : undefined}
           >
-            {author.values.length === 0 ? "auteur ?" : author.displayed}
+            {author.values.length === 0 ? t("identity.author_unknown") : author.displayed}
           </button>
         )}
         {activeData?.kingdom && <span className="id-badge">{activeData.kingdom}</span>}
@@ -42,34 +44,36 @@ export default function ResultIdentity({ query, activeData, author, onGoToNames,
       {kingdomAlert?.length > 0 && (
         <div className="regne-alert">
           <p className="regne-alert-title">
-            ⚠ Possible homonymie inter-règnes : {pluralSuffix(kingdomAlert.length).source} suggère{pluralSuffix(kingdomAlert.length).verb} un règne différent.
+            {t("identity.kingdom_alert_title", { count: kingdomAlert.length })}
           </p>
           <ul>
             {kingdomAlert.map((inc, i) => (
               <li key={i}>
-                <strong>{inc.module.toUpperCase()}</strong> suggère « {inc.suggested_kingdom} », règne retenu : « {inc.retained_kingdom} »
+                <strong>{inc.module.toUpperCase()}</strong>{" "}
+                {t("identity.kingdom_alert_item", { suggested: inc.suggested_kingdom, retained: inc.retained_kingdom })}
               </li>
             ))}
           </ul>
           <p className="regne-alert-hint">
-            Ce nom pourrait désigner un autre taxon — vérifiez le titre de l'article ou l'homonymie avant publication.
+            {t("identity.kingdom_alert_hint")}
           </p>
         </div>
       )}
       {rankAlert?.length > 0 && (
         <div className="regne-alert">
           <p className="regne-alert-title">
-            ⚠ Désaccord taxonomique entre sources : {pluralSuffix(rankAlert.length).source} donne{pluralSuffix(rankAlert.length).verb} une valeur différente.
+            {t("identity.rank_alert_title", { count: rankAlert.length })}
           </p>
           <ul>
             {rankAlert.map((inc, i) => (
               <li key={i}>
-                <strong>{inc.module.toUpperCase()}</strong> donne « {inc.suggested_value} » pour {inc.compared_field}, valeur retenue : « {inc.retained_value} »
+                <strong>{inc.module.toUpperCase()}</strong>{" "}
+                {t("identity.rank_alert_item", { suggested: inc.suggested_value, field: inc.compared_field, retained: inc.retained_value })}
               </li>
             ))}
           </ul>
           <p className="regne-alert-hint">
-            Divergence taxonomique réelle entre sources (pas un trou de données) — à trancher éditorialement, pas automatiquement.
+            {t("identity.rank_alert_hint")}
           </p>
         </div>
       )}

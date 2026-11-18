@@ -1,16 +1,17 @@
+import { useT } from "@/i18n/useT.js";
 import ImageGallery from "./ImageGallery.jsx";
 import ReferenceControls from "./ReferenceControls.jsx";
 import SubtaxaControls from "./SubtaxaControls.jsx";
 import TaxoboxControls from "./TaxoboxControls.jsx";
 
-// Title of the "rendered" box under the controls of each read-only
-// sub-tab, visually delimiting the wikitext block from the rest. "all"
-// is absent: it is the full editable article, not a preview of an
-// isolated block.
+// Title (message key) of the "rendered" box under the controls of each
+// read-only sub-tab, visually delimiting the wikitext block from the
+// rest. "all" is absent: it is the full editable article, not a
+// preview of an isolated block.
 const RENDER_BOX_TITLES = {
-  taxobox: "Rendu — bloc Taxobox",
-  subranks: "Rendu — liste des sous-rangs",
-  references: "Rendu — liens externes",
+  taxobox: "wikitext.render_taxobox",
+  subranks: "wikitext.render_subranks",
+  references: "wikitext.render_references",
 };
 
 function StatusBox({ children }) {
@@ -24,12 +25,13 @@ function StatusBox({ children }) {
 }
 
 function WikitextEditorBox({ activeSubTab, wikitext }) {
+  const t = useT();
   const editing = wikitext.editingSubTab === activeSubTab;
   return (
     <div className="render-box">
       <div className="render-box-header">
         <h4 className="render-box-title" id="wikitext-label">
-          {activeSubTab === "all" ? "Wikitexte" : RENDER_BOX_TITLES[activeSubTab]}
+          {activeSubTab === "all" ? t("wikitext.title") : t(RENDER_BOX_TITLES[activeSubTab])}
         </h4>
         <span className="render-box-actions">
           <button
@@ -38,10 +40,10 @@ function WikitextEditorBox({ activeSubTab, wikitext }) {
             aria-pressed={editing}
             onClick={editing ? wikitext.stopEditing : () => wikitext.startEditing(activeSubTab)}
           >
-            {editing ? "✓ Terminé" : "✎ Éditer"}
+            {editing ? t("wikitext.done") : t("wikitext.edit")}
           </button>
           <button type="button" className="edit-btn" onClick={() => wikitext.copy(wikitext.text)}>
-            {wikitext.copied ? "Copié ✓" : "Copier"}
+            {wikitext.copied ? t("common.copied") : t("common.copy")}
           </button>
         </span>
       </div>
@@ -72,15 +74,16 @@ export default function WikitextTab({
   onToggleBox,
   onChooseTaxoboxSource,
 }) {
+  const t = useT();
   return (
     <div className="wikitexte-tab">
-      {!activeEntry && activeSource && <StatusBox>En attente du préchargement de {activeSource.toUpperCase()}…</StatusBox>}
+      {!activeEntry && activeSource && <StatusBox>{t("wikitext.waiting_prefetch", { source: activeSource.toUpperCase() })}</StatusBox>}
 
-      {activeEntry?.status === "loading" && <StatusBox>Interrogation de {activeSource?.toUpperCase()}…</StatusBox>}
+      {activeEntry?.status === "loading" && <StatusBox>{t("wikitext.querying", { source: activeSource?.toUpperCase() })}</StatusBox>}
 
       {activeEntry?.status === "error" && (
         <div className="render-box">
-          <div className="panel-empty">Aucune donnée disponible via {activeSource?.toUpperCase()} pour ce taxon.</div>
+          <div className="panel-empty">{t("wikitext.no_data", { source: activeSource?.toUpperCase() })}</div>
         </div>
       )}
 

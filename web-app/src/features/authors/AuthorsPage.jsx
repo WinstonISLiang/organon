@@ -1,20 +1,19 @@
+import { useT } from "@/i18n/useT.js";
+
 export default function AuthorsPage({ onBack }) {
+  const t = useT();
   return (
     <div className="sources-page">
       <button type="button" className="back-link" onClick={onBack}>
-        ‹ Retour
+        ‹ {t("common.back")}
       </button>
 
-      <h1>Auteurs et crédits</h1>
+      <h1>{t("authors.title")}</h1>
 
       <section className="authors-entry">
         <h2>Organon</h2>
 
-        <p>
-          C'est un outil qui se situe entre une réécriture du Taxobot en
-          Python - une sorte d'héritier, et un petit oiseau qui aurait pris son
-          envol pour explorer de nouveaux horizons.
-        </p>
+        <p>{t("authors.organon_intro")}</p>
         <p>
           <a
             href="https://fr.wikipedia.org/wiki/Utilisateur:LD"
@@ -22,7 +21,7 @@ export default function AuthorsPage({ onBack }) {
             rel="noopener noreferrer"
           >
             LD
-          </a> est le développeur de ce site web.
+          </a> {t("authors.organon_developer_after")}
         </p>
       </section>
 
@@ -38,7 +37,7 @@ export default function AuthorsPage({ onBack }) {
         </h2>
 
         <p>
-          Outil en PHP, initié par{" "}
+          {t("authors.taxobot_before")}{" "}
           <a
             href="https://fr.wikipedia.org/wiki/Utilisateur:Hexasoft"
             target="_blank"
@@ -46,7 +45,7 @@ export default function AuthorsPage({ onBack }) {
           >
             Hexasoft
           </a>{" "}
-          et rejoint par{" "}
+          {t("authors.taxobot_middle")}{" "}
           <a
             href="https://fr.wikipedia.org/wiki/Utilisateur:LD"
             target="_blank"
@@ -54,27 +53,23 @@ export default function AuthorsPage({ onBack }) {
           >
             LD
           </a>
-          , pour générer des squelettes d'articles pour les taxons à partir de
-          bases de données taxonomiques tierces (GBIF, ITIS, WoRMS, Catalogue
-          of Life, EOL, NCBI, etc.).
+          {t("authors.taxobot_after")}
         </p>
       </section>
 
       <section className="authors-entry">
-        <h2>Wikipédia & Projet:Biologie</h2>
+        <h2>{t("authors.wikipedia_title")}</h2>
 
         <p>
-          La communauté wikipédienne, et en particulier les membres du projet Biologie, a été
-          le moteur de son élaboration. Discutons-en autour d'un{" "}
+          {t("authors.wikipedia_before")}{" "}
           <a
             href="https://fr.wikipedia.org/wiki/Discussion_Projet:Biologie/Le_caf%C3%A9_des_biologistes"
             target="_blank"
             rel="noopener noreferrer"
           >
-            café
+            {t("authors.wikipedia_link")}
           </a>{" "}
-          et, surtout, n'hésitez pas à contribuer à rendre la biologie plus accessible sur
-          Wikipédia (ou ailleurs).
+          {t("authors.wikipedia_after")}
         </p>
       </section>
 
@@ -82,7 +77,7 @@ export default function AuthorsPage({ onBack }) {
         <h2>Favicon</h2>
 
         <p>
-          Le favicon reprend le fichier{" "}
+          {t("authors.favicon_before")}{" "}
           <a
             href="https://commons.wikimedia.org/wiki/File:Greek_uc_omicron.svg"
             target="_blank"
@@ -90,7 +85,7 @@ export default function AuthorsPage({ onBack }) {
           >
             Greek_uc_omicron.svg
           </a>{" "}
-          de{" "}
+          {t("authors.favicon_middle")}{" "}
           <a
             href="https://commons.wikimedia.org/wiki/User:Mrmw"
             target="_blank"
@@ -98,7 +93,7 @@ export default function AuthorsPage({ onBack }) {
           >
             Mrmw
           </a>
-          , domaine public, via Wikimedia Commons.
+          {t("authors.favicon_after")}
         </p>
       </section>
     </div>

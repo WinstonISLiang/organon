@@ -5,10 +5,8 @@ import { flatten } from "./core.js";
 // ENABLED_LOCALES once it is complete.
 export const DEFAULT_LOCALE = "fr";
 
-// Locales offered to users (selector, cookie, browser detection). `en`
-// exists but stays hidden while the interface is being migrated: add it
-// here in the final migration step.
-export const ENABLED_LOCALES = ["fr"];
+// Locales offered to users (selector, cookie, browser detection).
+export const ENABLED_LOCALES = ["fr", "en"];
 
 // The default language is in the main bundle (no flash); the others are
 // separate chunks loaded on demand.

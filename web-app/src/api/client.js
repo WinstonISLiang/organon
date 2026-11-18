@@ -5,12 +5,33 @@
 // http://127.0.0.1:8123 (see vite.config.js); in production FastAPI
 // serves the built frontend. The session cookie would not travel to
 // another origin, and the backend does not enable CORS.
+import { translateServerMessage } from "./serverErrors.js";
+
 const API_BASE = "/api/v1";
+
+// Errors raised here carry `i18nKey` / `i18nParams` when their text is
+// ours (not a server `detail`): screens translate them with
+// apiErrorMessage(err, t). `message` keeps the French default text.
+function i18nError(message, i18nKey, i18nParams) {
+  const err = new Error(message);
+  err.i18nKey = i18nKey;
+  err.i18nParams = i18nParams;
+  return err;
+}
+
+// Message of an error in the current language: our own errors and known
+// French API `detail` strings are translated; anything else is shown as
+// returned by the server.
+export function apiErrorMessage(err, t) {
+  if (err?.i18nKey) return t(err.i18nKey, err.i18nParams);
+  const message = err?.message ?? "";
+  return translateServerMessage(message, t) || message;
+}
 
 async function apiGet(path) {
   const res = await fetch(`${API_BASE}${path}`);
   if (!res.ok) {
-    throw new Error(`Erreur API (${res.status}) sur ${path}`);
+    throw i18nError(`Erreur API (${res.status}) sur ${path}`, "errors.api_path", { status: res.status, path });
   }
   return res.json();
 }
@@ -32,7 +53,10 @@ async function postJson(path, payload) {
     } catch {
       /* non-JSON body */
     }
-    const err = new Error((typeof detail === "string" ? detail : detail?.message) || `Erreur API (${res.status})`);
+    const serverMessage = typeof detail === "string" ? detail : detail?.message;
+    const err = serverMessage
+      ? new Error(serverMessage)
+      : i18nError(`Erreur API (${res.status})`, "errors.api_status", { status: res.status });
     err.status = res.status;
     err.candidates = detail?.candidates ?? [];
     throw err;
@@ -91,7 +115,10 @@ export const LOGIN_URL = `${API_BASE}/auth/login`;
 export async function logout() {
   const res = await fetch(`${API_BASE}/auth/logout`, { method: "POST" });
   if (!res.ok) {
-    throw new Error(`Erreur API (${res.status}) sur /auth/logout`);
+    throw i18nError(`Erreur API (${res.status}) sur /auth/logout`, "errors.api_path", {
+      status: res.status,
+      path: "/auth/logout",
+    });
   }
   return res.json();
 }
@@ -132,7 +159,7 @@ export async function generateTaxonStream(payload, { onEvent } = {}) {
   if (!res.body) {
     // Browser without ReadableStream on Response.body (very old): no
     // fallback, the caller shows the error like any network failure.
-    throw new Error("Ce navigateur ne supporte pas la lecture en flux des réponses.");
+    throw i18nError("Ce navigateur ne supporte pas la lecture en flux des réponses.", "errors.stream_unsupported");
   }
 
   const reader = res.body.getReader();
@@ -162,7 +189,7 @@ export async function generateTaxonStream(payload, { onEvent } = {}) {
     throw new Error(fatalError.detail);
   }
   if (!result) {
-    throw new Error("Flux de génération interrompu avant la fin.");
+    throw i18nError("Flux de génération interrompu avant la fin.", "errors.stream_interrupted");
   }
   return result;
 }

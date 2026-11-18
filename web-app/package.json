@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "check:dist": "node scripts/check-dist.mjs",
     "preview": "vite preview",
-    "test:i18n": "node --test \"src/i18n/**/*.test.js\" \"src/shell/*.test.js\"",
+    "test:i18n": "node --test \"src/i18n/**/*.test.js\" \"src/shell/*.test.js\" \"src/api/*.test.js\"",
     "test:layout": "playwright test"
   },
   "dependencies": {

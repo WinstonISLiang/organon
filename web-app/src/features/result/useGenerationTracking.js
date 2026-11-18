@@ -1,10 +1,12 @@
 import { useRef, useState } from "react";
-import { generateTaxonStream } from "@/api/client.js";
+import { apiErrorMessage, generateTaxonStream } from "@/api/client.js";
+import { useT } from "@/i18n/useT.js";
 
 // Generation tracking: one entry per classification source
 // (`resultsBySource`), the displayed source (`activeSource`) and the
 // background prefetch of the other sources.
 export function useGenerationTracking(classificationModules) {
+  const t = useT();
   const [initialLoading, setInitialLoading] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [activeSource, setActiveSource] = useState(null);
@@ -101,7 +103,7 @@ export function useGenerationTracking(classificationModules) {
       }));
       return { data };
     } catch (err) {
-      const message = err.message || "Erreur inconnue lors de la génération.";
+      const message = apiErrorMessage(err, t) || t("errors.generation_unknown");
       if (isCurrent()) {
         setResultsBySource((prev) => ({ ...prev, [moduleId]: { ...prev[moduleId], status: "error", error: message } }));
       }
@@ -240,7 +242,7 @@ export function useGenerationTracking(classificationModules) {
         });
       })
       .catch((err) => {
-        const message = err.message || "Erreur inconnue lors de la génération.";
+        const message = apiErrorMessage(err, t) || t("errors.generation_unknown");
         setResultsBySource((prev) => ({
           ...prev,
           [activeSource]: {
